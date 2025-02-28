@@ -7,10 +7,10 @@ import 'add_officials_screen.dart';
 import 'add_officials_to_list_screen.dart';
 import 'location_screen.dart';
 import 'add_new_location_screen.dart';
+import 'date_time_screen.dart';
+import 'additional_game_info_screen.dart';
 
-void main() {
-  runApp(const EfficialsApp());
-}
+void main() => runApp(const EfficialsApp());
 
 class EfficialsApp extends StatelessWidget {
   const EfficialsApp({super.key});
@@ -54,10 +54,10 @@ class EfficialsApp extends StatelessWidget {
         ),
         checkboxTheme: CheckboxThemeData(
           side: const BorderSide(color: Colors.black, width: 2),
-          checkColor: const WidgetStatePropertyAll(Colors.white),
-          fillColor: WidgetStateProperty.resolveWith(
+          checkColor: const MaterialStatePropertyAll(Colors.white),
+          fillColor: MaterialStateProperty.resolveWith(
             (states) =>
-                states.contains(WidgetState.selected)
+                states.contains(MaterialState.selected)
                     ? const Color(0xFF2196F3)
                     : Colors.white,
           ),
@@ -79,14 +79,11 @@ class EfficialsApp extends StatelessWidget {
           ),
         ),
       ),
-      builder: (context, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: child!,
-        );
-      },
+      builder:
+          (context, child) => GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: child!,
+          ),
       initialRoute: '/home',
       routes: {
         '/home': (context) => const SchedulerHomeScreen(),
@@ -105,6 +102,8 @@ class EfficialsApp extends StatelessWidget {
         '/add_officials_to_list': (context) => const AddOfficialsToListScreen(),
         '/location': (context) => const LocationScreen(),
         '/add_new_location': (context) => const AddNewLocationScreen(),
+        '/date_time': (context) => const DateTimeScreen(),
+        '/additional_game_info': (context) => const AdditionalGameInfoScreen(),
       },
     );
   }

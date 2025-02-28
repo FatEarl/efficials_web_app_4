@@ -4,7 +4,7 @@ class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key});
 
   @override
-  _LocationScreenState createState() => _LocationScreenState();
+  State<LocationScreen> createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
@@ -13,31 +13,28 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String scheduleName =
-        ModalRoute.of(context)!.settings.arguments as String;
+    final scheduleName = ModalRoute.of(context)!.settings.arguments as String;
 
-    List<DropdownMenuItem<String>> dropdownItems = [];
-    if (savedLocations.isEmpty) {
-      dropdownItems.add(
-        const DropdownMenuItem(
-          value: 'no_locations',
-          enabled: false,
-          child: Text(
-            'No saved locations',
-            style: TextStyle(color: Colors.red),
-          ),
-        ),
-      );
-    } else {
-      dropdownItems.addAll(
-        savedLocations.map(
-          (location) => DropdownMenuItem<String>(
-            value: location,
-            child: Text(location, style: const TextStyle(fontSize: 18)),
-          ),
-        ),
-      );
-    }
+    var dropdownItems =
+        savedLocations.isEmpty
+            ? [
+              const DropdownMenuItem(
+                value: 'no_locations',
+                enabled: false,
+                child: Text(
+                  'No saved locations',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ]
+            : savedLocations
+                .map(
+                  (location) => DropdownMenuItem<String>(
+                    value: location,
+                    child: Text(location, style: const TextStyle(fontSize: 18)),
+                  ),
+                )
+                .toList();
     dropdownItems.add(
       const DropdownMenuItem(
         value: 'add_location',
@@ -70,29 +67,20 @@ class _LocationScreenState extends State<LocationScreen> {
                   size: 36,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Tokens: 1')));
-                },
+                onPressed:
+                    () => ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Tokens: 1'))),
               ),
-              Positioned(
+              const Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red,
+                  child: Text(
                     '1',
                     style: TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -104,7 +92,7 @@ class _LocationScreenState extends State<LocationScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -117,19 +105,19 @@ class _LocationScreenState extends State<LocationScreen> {
                 DropdownButtonFormField<String>(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(color: Colors.blue, width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(color: Colors.blue, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(color: Colors.blue, width: 2),
                     ),
                     hintText: 'Select Location',
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                   value: selectedLocation,
-                  onChanged: (String? newValue) async {
+                  onChanged: (newValue) async {
                     print('Selected location: $newValue');
                     if (newValue == 'add_location') {
                       final result = await Navigator.pushNamed(
@@ -158,11 +146,10 @@ class _LocationScreenState extends State<LocationScreen> {
                     if (selectedLocation != null &&
                         selectedLocation != 'no_locations' &&
                         selectedLocation != 'add_location') {
-                      // TODO: Navigate to next screen (e.g., DateTime) when implemented
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Next screen not implemented yet'),
-                        ),
+                      Navigator.pushNamed(
+                        context,
+                        '/date_time',
+                        arguments: scheduleName,
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
