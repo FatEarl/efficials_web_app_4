@@ -54,10 +54,10 @@ class EfficialsApp extends StatelessWidget {
         ),
         checkboxTheme: CheckboxThemeData(
           side: const BorderSide(color: Colors.black, width: 2),
-          checkColor: const MaterialStatePropertyAll(Colors.white),
-          fillColor: MaterialStateProperty.resolveWith(
+          checkColor: const WidgetStatePropertyAll(Colors.white),
+          fillColor: WidgetStateProperty.resolveWith(
             (states) =>
-                states.contains(MaterialState.selected)
+                states.contains(WidgetState.selected)
                     ? const Color(0xFF2196F3)
                     : Colors.white,
           ),
