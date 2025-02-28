@@ -151,9 +151,9 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                         side: const BorderSide(color: Colors.black, width: 2),
                         minimumSize: const Size(200, 60),
                       ),
-                      child: const Text(
-                        'Change Date',
-                        style: TextStyle(
+                      child: Text(
+                        selectedDate == null ? 'Set Date' : 'Change Date',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -167,9 +167,9 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                         side: const BorderSide(color: Colors.black, width: 2),
                         minimumSize: const Size(200, 60),
                       ),
-                      child: const Text(
-                        'Change Time',
-                        style: TextStyle(
+                      child: Text(
+                        selectedTime == null ? 'Set Time' : 'Change Time',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
