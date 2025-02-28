@@ -3,13 +3,16 @@ import 'custom_text_field.dart';
 
 class CreateScheduleScreen extends StatefulWidget {
   final String selectedSport;
+
   const CreateScheduleScreen({super.key, required this.selectedSport});
+
   @override
   State<CreateScheduleScreen> createState() => _CreateScheduleScreenState();
 }
 
 class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
   final TextEditingController _scheduleNameController = TextEditingController();
+
   @override
   void dispose() {
     _scheduleNameController.dispose();
@@ -117,11 +120,11 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                   onPressed: () {
                     if (_scheduleNameController.text.isNotEmpty) {
                       print(
-                        'Navigating to SelectOfficialsListScreen with schedule: ${_scheduleNameController.text}',
+                        'Navigating to LocationScreen with schedule: ${_scheduleNameController.text}',
                       );
                       Navigator.pushNamed(
                         context,
-                        '/select_officials_list',
+                        '/location',
                         arguments: _scheduleNameController.text,
                       );
                     } else {

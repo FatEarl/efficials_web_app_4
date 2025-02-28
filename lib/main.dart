@@ -5,6 +5,8 @@ import 'create_schedule_screen.dart';
 import 'select_officials_list_screen.dart';
 import 'add_officials_screen.dart';
 import 'add_officials_to_list_screen.dart';
+import 'location_screen.dart';
+import 'add_new_location_screen.dart';
 
 void main() {
   runApp(const EfficialsApp());
@@ -101,6 +103,8 @@ class EfficialsApp extends StatelessWidget {
             ),
         '/add_officials': (context) => const AddOfficialsScreen(),
         '/add_officials_to_list': (context) => const AddOfficialsToListScreen(),
+        '/location': (context) => const LocationScreen(),
+        '/add_new_location': (context) => const AddNewLocationScreen(),
       },
     );
   }
