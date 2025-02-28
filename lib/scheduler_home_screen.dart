@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:efficials_web_app_4/screens/select_sport_screen.dart';
+import 'package:efficials_web_app_4/select_sport_screen.dart';
 
 class SchedulerHomeScreen extends StatefulWidget {
   const SchedulerHomeScreen({super.key});
-
   @override
   State<SchedulerHomeScreen> createState() => _SchedulerHomeScreenState();
 }

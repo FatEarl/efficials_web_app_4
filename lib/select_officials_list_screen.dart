@@ -1,28 +1,15 @@
 import 'package:flutter/material.dart';
 
-class SelectSportScreen extends StatefulWidget {
-  const SelectSportScreen({super.key});
-
+class SelectOfficialsListScreen extends StatefulWidget {
+  final String scheduleName;
+  const SelectOfficialsListScreen({super.key, required this.scheduleName});
   @override
-  State<SelectSportScreen> createState() => _SelectSportScreenState();
+  State<SelectOfficialsListScreen> createState() =>
+      _SelectOfficialsListScreenState();
 }
 
-class _SelectSportScreenState extends State<SelectSportScreen> {
-  String? selectedSport;
-  bool isDefaultChoice = false;
-  static String? _defaultSport;
-
-  @override
-  void initState() {
-    super.initState();
-    print('Initializing SelectSportScreen');
-    if (_defaultSport != null) {
-      selectedSport = _defaultSport;
-      isDefaultChoice = true;
-      print('Default sport loaded: $_defaultSport');
-    }
-  }
-
+class _SelectOfficialsListScreenState extends State<SelectOfficialsListScreen> {
+  String? selectedList;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +20,7 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Select Sport',
+          'Select Officials List',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -87,7 +74,13 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text(
+                  'Select a list of officials to edit or create a new list.',
+                  style: TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(
@@ -99,15 +92,14 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
                     ),
-                    hintText: 'Select Sport',
+                    hintText: 'Select a list',
                   ),
-                  value: selectedSport,
-                  onChanged: (String? newValue) {
-                    setState(() => selectedSport = newValue);
-                    print('Selected sport: $newValue');
-                  },
+                  value: selectedList,
+                  onChanged:
+                      (String? newValue) =>
+                          setState(() => selectedList = newValue),
                   items:
-                      ['Baseball', 'Basketball', 'Football', 'Softball']
+                      ['Underclass Football (Rookies)']
                           .map(
                             (value) => DropdownMenuItem<String>(
                               value: value,
@@ -120,64 +112,44 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                           .toList(),
                 ),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: isDefaultChoice,
-                      onChanged: (bool? value) {
-                        setState(() => isDefaultChoice = value ?? false);
-                        print('Default choice changed to: $value');
-                      },
-                      side: const BorderSide(color: Colors.black, width: 2),
-                      fillColor: WidgetStateProperty.resolveWith(
-                        (states) =>
-                            states.contains(WidgetState.selected)
-                                ? const Color(0xFF2196F3)
-                                : Colors.white,
-                      ),
-                      checkColor: Colors.white,
-                    ),
-                    const Text(
-                      'Make this my default choice',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
+                ElevatedButton(
+                  onPressed: () {
+                    print(
+                      'Navigating to AddOfficialsScreen with schedule: ${widget.scheduleName}',
+                    );
+                    Navigator.pushNamed(
+                      context,
+                      '/add_officials',
+                      arguments: widget.scheduleName,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(250, 50),
+                  ),
+                  child: const Text('Create new list'),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    if (selectedSport != null) {
-                      if (isDefaultChoice) {
-                        _defaultSport = selectedSport;
-                        print('Default sport set to: $_defaultSport');
-                      }
+                    if (selectedList != null) {
                       print(
-                        'Navigating to CreateScheduleScreen with sport: $selectedSport',
+                        'Continuing with selected list: $selectedList for schedule: ${widget.scheduleName}',
                       );
-                      Navigator.pushNamed(
-                        context,
-                        '/create_schedule',
-                        arguments: selectedSport,
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Selected List: $selectedList')),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Please select a sport before continuing!',
+                            'Please select a list or create a new one!',
                           ),
                         ),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    side: const BorderSide(color: Colors.black, width: 2),
                     minimumSize: const Size(250, 50),
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                   child: const Text('Continue'),
                 ),
