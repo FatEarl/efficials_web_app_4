@@ -109,6 +109,7 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                           .toList(),
                 ),
                 const SizedBox(height: 20),
+                // TODO: If this checkbox is checked, the user will skip this step in the future when creating a game.
                 Row(
                   children: [
                     Checkbox(
@@ -151,7 +152,10 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(250, 70),
+                    minimumSize: const Size(
+                      250,
+                      50,
+                    ), // Reduced height from 70 to 50
                   ),
                   child: const Text('Continue'),
                 ),
