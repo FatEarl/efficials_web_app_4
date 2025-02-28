@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:efficials_web_app_4/screens/create_game_screen.dart';
+import 'package:efficials_web_app_4/screens/select_sport_screen.dart';
 
 class SchedulerHomeScreen extends StatefulWidget {
   const SchedulerHomeScreen({super.key});
@@ -176,7 +176,7 @@ class _SchedulerHomeScreenState extends State<SchedulerHomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateGameScreen()),
+            MaterialPageRoute(builder: (context) => const SelectSportScreen()),
           );
         },
         child: const Icon(Icons.add),

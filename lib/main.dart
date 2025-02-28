@@ -16,30 +16,34 @@ class EfficialsApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF2196F3), // Blue from PDF
-          iconTheme: IconThemeData(
-            size: 36,
-          ), // Larger icons in app bar (increased from 30 to 36)
+          backgroundColor: Color(0xFF2196F3),
+          iconTheme: IconThemeData(size: 36),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color(0xFF2196F3), // Blue FAB
-          foregroundColor: Colors.white, // White icon/text
-          iconSize: 30, // FAB "+" icon size
+          backgroundColor: Color(0xFF2196F3),
+          foregroundColor: Colors.white,
+          iconSize: 30,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50), // Uniform button size
+            backgroundColor: const Color(0xFF2196F3),
+            foregroundColor: Colors.white,
+            side: const BorderSide(color: Colors.black, width: 2),
+            minimumSize: const Size(double.infinity, 50),
             textStyle: const TextStyle(
-              fontSize: 16,
-            ), // Uniform button text size
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ), // Updated font size and weight
           ),
         ),
         textTheme: const TextTheme(
-          bodyMedium: TextStyle(fontSize: 18), // Default text size
-          titleLarge: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ), // For headings
+          bodyMedium: TextStyle(fontSize: 18),
+          titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       home: const SchedulerHomeScreen(),
