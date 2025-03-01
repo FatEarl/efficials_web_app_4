@@ -1,61 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:efficials_web_app_4/select_sport_screen.dart';
 
-class SchedulerHomeScreen extends StatefulWidget {
+class SchedulerHomeScreen extends StatelessWidget {
   const SchedulerHomeScreen({super.key});
-  @override
-  State<SchedulerHomeScreen> createState() => _SchedulerHomeScreenState();
-}
 
-class _SchedulerHomeScreenState extends State<SchedulerHomeScreen> {
   @override
   Widget build(BuildContext context) {
+    // Calculate the status bar height and app bar height to align the Drawer header
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double appBarHeight = kToolbarHeight;
     final double totalBannerHeight = statusBarHeight + appBarHeight;
 
     return Scaffold(
       appBar: AppBar(
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+        backgroundColor: const Color(0xFF2196F3),
+        title: const Text(
+          'Scheduler Home',
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           Stack(
             alignment: Alignment.topRight,
             children: [
               IconButton(
-                icon: const Icon(Icons.monetization_on),
-                onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Tokens: 1')));
-                },
+                icon: const Icon(Icons.monetization_on,
+                    size: 36, color: Colors.white),
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tokens: 1')),
+                ),
               ),
-              Positioned(
+              const Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
-                    '1',
-                    style: TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
-                  ),
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red,
+                  child: Text('1',
+                      style: TextStyle(color: Colors.white, fontSize: 10)),
                 ),
               ),
             ],
@@ -81,34 +62,35 @@ class _SchedulerHomeScreenState extends State<SchedulerHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
-                      children: [
-                        const CircleAvatar(
+                      children: const [
+                        CircleAvatar(
                           radius: 24,
                           backgroundColor: Colors.white,
                           child: Icon(
                             Icons.person,
                             size: 28,
-                            color: Color(0xFF2196F3),
+                            color: Colors.grey,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
-                          'Jason Unverzagt',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleLarge?.copyWith(color: Colors.white),
+                          'Donald J. Trump',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 22,
-                      ),
+                      icon:
+                          const Icon(Icons.edit, color: Colors.white, size: 22),
                       onPressed: () {
+                        Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Edit profile clicked')),
+                          const SnackBar(
+                              content: Text('Edit profile coming soon')),
                         );
                       },
                     ),
@@ -117,68 +99,84 @@ class _SchedulerHomeScreenState extends State<SchedulerHomeScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today, size: 32),
-              title: Text(
-                'Schedules',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontSize: 20),
-              ),
+              leading: const Icon(Icons.schedule, size: 30),
+              title: const Text('Schedules', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Schedules coming soon')),
+                );
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.drafts, size: 32),
-              title: Text(
-                'Unpublished Games',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontSize: 20),
-              ),
+              leading: const Icon(Icons.games, size: 30),
+              title: const Text('Unpublished Games',
+                  style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Unpublished Games coming soon')),
+                );
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.location_on, size: 32),
-              title: Text(
-                'Locations',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontSize: 20),
-              ),
+              leading: const Icon(Icons.location_on, size: 30),
+              title: const Text('Locations', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Locations coming soon')),
+                );
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.list, size: 32),
-              title: Text(
-                'Lists of Officials',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontSize: 20),
-              ),
+              leading: const Icon(Icons.list, size: 30),
+              title: const Text('Lists of Officials',
+                  style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Lists of Officials coming soon')),
+                );
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.settings, size: 32),
-              title: Text(
-                'Settings',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontSize: 20),
-              ),
+              leading: const Icon(Icons.settings, size: 30),
+              title: const Text('Settings', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Settings coming soon')),
+                );
+              },
             ),
           ],
         ),
       ),
-      body: const Center(
-        child: Text(
-          'Press the "+" icon to schedule your first game.',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  'Press the "+" icon to schedule your first game.',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SelectSportScreen()),
-          );
-        },
-        child: const Icon(Icons.add),
+        onPressed: () => Navigator.pushNamed(context, '/select_sport'),
+        backgroundColor: const Color(0xFF2196F3),
+        child: const Icon(Icons.add, size: 30, color: Colors.white),
       ),
     );
   }

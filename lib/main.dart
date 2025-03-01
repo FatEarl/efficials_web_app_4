@@ -54,10 +54,10 @@ class EfficialsApp extends StatelessWidget {
         ),
         checkboxTheme: CheckboxThemeData(
           side: const BorderSide(color: Colors.black, width: 2),
-          checkColor: const MaterialStatePropertyAll(Colors.white),
-          fillColor: MaterialStateProperty.resolveWith(
+          checkColor: const WidgetStatePropertyAll(Colors.white),
+          fillColor: WidgetStateProperty.resolveWith(
             (states) =>
-                states.contains(MaterialState.selected)
+                states.contains(WidgetState.selected)
                     ? const Color(0xFF2196F3)
                     : Colors.white,
           ),
@@ -68,6 +68,7 @@ class EfficialsApp extends StatelessWidget {
           selectionHandleColor: Color(0xFF2196F3),
         ),
         inputDecorationTheme: const InputDecorationTheme(
+          labelStyle: TextStyle(color: Colors.black),
           border: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.black, width: 2),
           ),
@@ -88,16 +89,9 @@ class EfficialsApp extends StatelessWidget {
       routes: {
         '/home': (context) => const SchedulerHomeScreen(),
         '/select_sport': (context) => const SelectSportScreen(),
-        '/create_schedule':
-            (context) => CreateScheduleScreen(
-              selectedSport:
-                  ModalRoute.of(context)!.settings.arguments as String,
-            ),
+        '/create_schedule': (context) => const CreateScheduleScreen(),
         '/select_officials_list':
-            (context) => SelectOfficialsListScreen(
-              scheduleName:
-                  ModalRoute.of(context)!.settings.arguments as String,
-            ),
+            (context) => const SelectOfficialsListScreen(),
         '/add_officials': (context) => const AddOfficialsScreen(),
         '/add_officials_to_list': (context) => const AddOfficialsToListScreen(),
         '/location': (context) => const LocationScreen(),

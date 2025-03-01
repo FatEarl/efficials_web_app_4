@@ -9,22 +9,18 @@ class SelectSportScreen extends StatefulWidget {
 
 class _SelectSportScreenState extends State<SelectSportScreen> {
   String? selectedSport;
-  bool isDefaultChoice = false;
-  static String? _defaultSport;
-
-  @override
-  void initState() {
-    super.initState();
-    print('Initializing SelectSportScreen');
-    if (_defaultSport != null) {
-      selectedSport = _defaultSport;
-      isDefaultChoice = true;
-      print('Default sport loaded: $_defaultSport');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    List<String> sports = [
+      'Football',
+      'Basketball',
+      'Baseball',
+      'Soccer',
+      'Volleyball',
+      'Other',
+    ];
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF2196F3),
@@ -50,29 +46,20 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                   size: 36,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Tokens: 1')));
-                },
+                onPressed:
+                    () => ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Tokens: 1'))),
               ),
-              Positioned(
+              const Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red,
+                  child: Text(
                     '1',
                     style: TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -84,77 +71,56 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Text(
+                  'What sport are you scheduling for?',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 60),
                 DropdownButtonFormField<String>(
                   decoration: const InputDecoration(
+                    labelText: 'Sport',
+                    labelStyle: TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(
+                        color: Color(0xFF2196F3),
+                        width: 2,
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(
+                        color: Color(0xFF2196F3),
+                        width: 2,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderSide: BorderSide(
+                        color: Color(0xFF2196F3),
+                        width: 2,
+                      ),
                     ),
-                    hintText: 'Select Sport',
                   ),
                   value: selectedSport,
-                  onChanged: (String? newValue) {
-                    setState(() => selectedSport = newValue);
-                    print('Selected sport: $newValue');
-                  },
+                  onChanged:
+                      (newValue) => setState(() => selectedSport = newValue),
                   items:
-                      ['Baseball', 'Basketball', 'Football', 'Softball']
+                      sports
                           .map(
-                            (value) => DropdownMenuItem<String>(
+                            (value) => DropdownMenuItem(
                               value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(fontSize: 18),
-                              ),
+                              child: Text(value),
                             ),
                           )
                           .toList(),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: isDefaultChoice,
-                      onChanged: (bool? value) {
-                        setState(() => isDefaultChoice = value ?? false);
-                        print('Default choice changed to: $value');
-                      },
-                      side: const BorderSide(color: Colors.black, width: 2),
-                      fillColor: WidgetStateProperty.resolveWith(
-                        (states) =>
-                            states.contains(WidgetState.selected)
-                                ? const Color(0xFF2196F3)
-                                : Colors.white,
-                      ),
-                      checkColor: Colors.white,
-                    ),
-                    const Text(
-                      'Make this my default choice',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 60),
                 ElevatedButton(
                   onPressed: () {
                     if (selectedSport != null) {
-                      if (isDefaultChoice) {
-                        _defaultSport = selectedSport;
-                        print('Default sport set to: $_defaultSport');
-                      }
-                      print(
-                        'Navigating to CreateScheduleScreen with sport: $selectedSport',
-                      );
                       Navigator.pushNamed(
                         context,
                         '/create_schedule',
@@ -162,24 +128,19 @@ class _SelectSportScreenState extends State<SelectSportScreen> {
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please select a sport before continuing!',
-                          ),
-                        ),
+                        const SnackBar(content: Text('Please select a sport!')),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
                     side: const BorderSide(color: Colors.black, width: 2),
-                    minimumSize: const Size(250, 50),
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    minimumSize: const Size(250, 70),
                   ),
-                  child: const Text('Continue'),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

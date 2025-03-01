@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'custom_text_field.dart';
 
 class AddNewLocationScreen extends StatefulWidget {
   const AddNewLocationScreen({super.key});
 
   @override
-  _AddNewLocationScreenState createState() => _AddNewLocationScreenState();
+  State<AddNewLocationScreen> createState() => _AddNewLocationScreenState();
 }
 
 class _AddNewLocationScreenState extends State<AddNewLocationScreen> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _zipCodeController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _zipCodeController = TextEditingController();
 
   @override
   void dispose() {
@@ -23,8 +24,7 @@ class _AddNewLocationScreenState extends State<AddNewLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String scheduleName =
-        ModalRoute.of(context)!.settings.arguments as String;
+    final scheduleName = ModalRoute.of(context)!.settings.arguments as String;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,7 +34,7 @@ class _AddNewLocationScreenState extends State<AddNewLocationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Add new location',
+          'Add New Location',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -51,29 +51,20 @@ class _AddNewLocationScreenState extends State<AddNewLocationScreen> {
                   size: 36,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Tokens: 1')));
-                },
+                onPressed:
+                    () => ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Tokens: 1'))),
               ),
-              Positioned(
+              const Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red,
+                  child: Text(
                     '1',
                     style: TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -85,121 +76,157 @@ class _AddNewLocationScreenState extends State<AddNewLocationScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomTextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    hintText: 'Title',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Add a new location',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  "Ex. - O'Fallon SportsPlex - Field 1",
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                const SizedBox(height: 25),
-                CustomTextField(
-                  controller: _addressController,
-                  decoration: const InputDecoration(
-                    hintText: 'Address',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                  const SizedBox(height: 60),
+                  CustomTextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      labelStyle: TextStyle(color: Colors.black),
+                      hintText: "Ex. O'Fallon SportsPlex - Field 1",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 18),
                   ),
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 30),
-                CustomTextField(
-                  controller: _zipCodeController,
-                  decoration: const InputDecoration(
-                    hintText: 'Zip Code',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                  const SizedBox(height: 25),
+                  CustomTextField(
+                    controller: _addressController,
+                    decoration: const InputDecoration(
+                      labelText: 'Address',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 18),
                   ),
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(fontSize: 18),
-                  keyboardType: TextInputType.number,
-                  maxLength: 5,
-                  buildCounter:
-                      (
-                        BuildContext context, {
-                        int? currentLength,
-                        bool? isFocused,
-                        int? maxLength,
-                      }) => null as Widget?,
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_titleController.text.isNotEmpty &&
-                          _addressController.text.isNotEmpty &&
-                          _zipCodeController.text.length == 5 &&
-                          RegExp(
-                            r'^\d{5}$',
-                          ).hasMatch(_zipCodeController.text)) {
-                        print(
-                          'Saving location - Title: ${_titleController.text}, Address: ${_addressController.text}, Zip: ${_zipCodeController.text} for schedule: $scheduleName',
-                        );
-                        // TODO: Save location to database for future use across the app
-                        Navigator.pop(context, _titleController.text);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please fill all fields correctly (Zip Code must be 5 digits)',
+                  const SizedBox(height: 25),
+                  TextField(
+                    controller: _zipCodeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Zip Code',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 18),
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    maxLength: 5,
+                    buildCounter:
+                        (
+                          context, {
+                          required currentLength,
+                          required maxLength,
+                          required isFocused,
+                        }) => null,
+                    contextMenuBuilder:
+                        (context, editableTextState) => const SizedBox.shrink(),
+                    enableInteractiveSelection: false,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    showCursor: true,
+                  ),
+                  const SizedBox(height: 60),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_titleController.text.isNotEmpty &&
+                            _addressController.text.isNotEmpty &&
+                            _zipCodeController.text.length == 5 &&
+                            RegExp(
+                              r'^\d{5}$',
+                            ).hasMatch(_zipCodeController.text)) {
+                          Navigator.pop(context, _titleController.text);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Please fill all fields correctly (Zip Code must be 5 digits)',
+                              ),
                             ),
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
-                      side: const BorderSide(color: Colors.black, width: 2),
-                      minimumSize: const Size(250, 50),
-                    ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2196F3),
+                        side: const BorderSide(color: Colors.black, width: 2),
+                        minimumSize: const Size(250, 70),
+                      ),
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

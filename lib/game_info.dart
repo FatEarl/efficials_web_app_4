@@ -7,6 +7,11 @@ class GameInfo {
   final TimeOfDay time;
   final String location;
   final List<String> officials;
+  final String level;
+  final String gender;
+  final int officialsRequired;
+  final int feePerOfficial;
+  final bool isFirstComeFirstServed;
 
   GameInfo({
     required this.sport,
@@ -15,5 +20,10 @@ class GameInfo {
     required this.time,
     required this.location,
     required this.officials,
+    this.level = '',
+    this.gender = '',
+    this.officialsRequired = 0,
+    this.feePerOfficial = 0,
+    this.isFirstComeFirstServed = false,
   });
 }

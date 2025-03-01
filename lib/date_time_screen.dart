@@ -34,7 +34,6 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        print('Date selected: $selectedDate');
       });
     }
   }
@@ -51,6 +50,14 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                 onPrimary: Colors.white,
                 onSurface: Colors.black,
               ),
+              timePickerTheme: const TimePickerThemeData(
+                dialHandColor: Color(0xFF2196F3),
+                hourMinuteTextColor: Colors.black,
+                entryModeIconColor: Color(0xFF2196F3),
+                hourMinuteColor: Colors.white,
+                dayPeriodTextColor: Colors.black,
+                dayPeriodColor: Color(0xFF2196F3),
+              ),
             ),
             child: child!,
           ),
@@ -58,7 +65,6 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
     if (picked != null && picked != selectedTime) {
       setState(() {
         selectedTime = picked;
-        print('Time selected: $selectedTime');
       });
     }
   }
@@ -192,9 +198,6 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                             time: selectedTime!,
                             location: location,
                             officials: officials,
-                          );
-                          print(
-                            'Navigating to AdditionalGameInfoScreen with: $scheduleName, Date: $selectedDate, Time: $selectedTime',
                           );
                           Navigator.pushNamed(
                             context,

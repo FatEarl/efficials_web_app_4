@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'custom_text_field.dart';
 
 class CreateScheduleScreen extends StatefulWidget {
-  final String selectedSport;
-
-  const CreateScheduleScreen({super.key, required this.selectedSport});
+  const CreateScheduleScreen({super.key});
 
   @override
   State<CreateScheduleScreen> createState() => _CreateScheduleScreenState();
 }
 
 class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
-  final TextEditingController _scheduleNameController = TextEditingController();
+  final _scheduleController = TextEditingController();
 
   @override
   void dispose() {
-    _scheduleNameController.dispose();
+    _scheduleController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final sport = ModalRoute.of(context)!.settings.arguments as String;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF2196F3),
@@ -29,7 +29,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Name Schedule',
+          'Create Schedule',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -46,29 +46,20 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                   size: 36,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Tokens: 1')));
-                },
+                onPressed:
+                    () => ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Tokens: 1'))),
               ),
-              Positioned(
+              const Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red,
+                  child: Text(
                     '1',
                     style: TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -80,74 +71,85 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Create a name for your new ${widget.selectedSport.toUpperCase()} schedule. The title you create should allow officials to identify the level of competition.',
-                  style: const TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                CustomTextField(
-                  controller: _scheduleNameController,
-                  decoration: InputDecoration(
-                    hintText: 'Ex. Varsity ${widget.selectedSport}',
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    border: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Create a name for your ${sport.toUpperCase()} schedule. The title you create should allow officials to identify the level of competition.',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                     ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Note: There is no need to specify a time period for the schedule. For example, use "Boys Varsity" rather than "2016-2017 Boys Varsity."',
-                  style: TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_scheduleNameController.text.isNotEmpty) {
-                      print(
-                        'Navigating to LocationScreen with schedule: ${_scheduleNameController.text}',
-                      );
-                      Navigator.pushNamed(
-                        context,
-                        '/location',
-                        arguments: _scheduleNameController.text,
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please enter a schedule name before continuing!',
-                          ),
+                  const SizedBox(height: 30),
+                  CustomTextField(
+                    controller: _scheduleController,
+                    decoration: const InputDecoration(
+                      hintText: 'Ex. Varsity Football',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
                         ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    side: const BorderSide(color: Colors.black, width: 2),
-                    minimumSize: const Size(250, 50),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 18),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Note: There is no need to specify a time period for the schedule. For example, use "Boys Varsity" rather than "2016-2017 Boys Varsity."',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 60),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_scheduleController.text.isNotEmpty) {
+                        Navigator.pushNamed(
+                          context,
+                          '/location',
+                          arguments: _scheduleController.text,
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a schedule name!'),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      side: const BorderSide(color: Colors.black, width: 2),
+                      minimumSize: const Size(250, 70),
+                    ),
+                    child: const Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -9,38 +9,11 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   String? selectedLocation;
-  final List<String> savedLocations = [];
+  final List<String> locations = ['No saved locations', '+ Add new location'];
 
   @override
   Widget build(BuildContext context) {
     final scheduleName = ModalRoute.of(context)!.settings.arguments as String;
-
-    var dropdownItems =
-        savedLocations.isEmpty
-            ? [
-              const DropdownMenuItem(
-                value: 'no_locations',
-                enabled: false,
-                child: Text(
-                  'No saved locations',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ]
-            : savedLocations
-                .map(
-                  (location) => DropdownMenuItem<String>(
-                    value: location,
-                    child: Text(location, style: const TextStyle(fontSize: 18)),
-                  ),
-                )
-                .toList();
-    dropdownItems.add(
-      const DropdownMenuItem(
-        value: 'add_location',
-        child: Text('+ Add new location', style: TextStyle(fontSize: 18)),
-      ),
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -93,83 +66,112 @@ class _LocationScreenState extends State<LocationScreen> {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Where will the game be played?',
-                  style: TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
-                    ),
-                    hintText: 'Select Location',
-                    hintStyle: TextStyle(color: Colors.grey),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Where will the game be played?',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
-                  value: selectedLocation,
-                  onChanged: (newValue) async {
-                    print('Selected location: $newValue');
-                    if (newValue == 'add_location') {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        '/add_new_location',
-                        arguments: scheduleName,
-                      );
-                      if (result != null && result is String) {
-                        setState(() {
-                          savedLocations.add(result);
-                          selectedLocation = result;
-                        });
-                      }
-                    } else {
-                      setState(() => selectedLocation = newValue);
-                    }
-                  },
-                  items: dropdownItems,
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    print(
-                      'Continue pressed with location: $selectedLocation for schedule: $scheduleName',
-                    );
-                    if (selectedLocation != null &&
-                        selectedLocation != 'no_locations' &&
-                        selectedLocation != 'add_location') {
-                      Navigator.pushNamed(
-                        context,
-                        '/date_time',
-                        arguments: scheduleName,
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select a valid location'),
+                  const SizedBox(height: 60),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Location',
+                      labelStyle: TextStyle(color: Colors.black),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
                         ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    side: const BorderSide(color: Colors.black, width: 2),
-                    minimumSize: const Size(250, 50),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    value: selectedLocation,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedLocation = newValue;
+                        if (newValue == '+ Add new location') {
+                          Navigator.pushNamed(
+                            context,
+                            '/add_new_location',
+                            arguments: scheduleName,
+                          ).then((result) {
+                            if (result != null) {
+                              setState(() {
+                                if (locations.contains('No saved locations')) {
+                                  locations.remove('No saved locations');
+                                }
+                                locations.add(result as String);
+                                selectedLocation = result;
+                              });
+                            }
+                          });
+                        }
+                      });
+                    },
+                    items:
+                        locations.map((value) {
+                          return DropdownMenuItem(
+                            value: value,
+                            child: Text(
+                              value,
+                              style:
+                                  value == 'No saved locations'
+                                      ? const TextStyle(color: Colors.red)
+                                      : const TextStyle(color: Colors.black),
+                            ),
+                          );
+                        }).toList(),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 60),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (selectedLocation != null &&
+                          selectedLocation != '+ Add new location' &&
+                          selectedLocation != 'No saved locations') {
+                        Navigator.pushNamed(
+                          context,
+                          '/date_time',
+                          arguments: scheduleName,
+                        );
+                      } else if (selectedLocation == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select or add a valid location!',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      side: const BorderSide(color: Colors.black, width: 2),
+                      minimumSize: const Size(250, 70),
+                    ),
+                    child: const Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
