@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.efficials_web_app_4"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973" // Updated from flutter.ndkVersion to match sqflite_android
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

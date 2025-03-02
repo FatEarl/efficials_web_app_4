@@ -114,7 +114,7 @@ class _CreateNewListScreenState extends State<CreateNewListScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF2196F3),
+                      backgroundColor: const Color(0xFF2196F3),
                       side: const BorderSide(color: Colors.black, width: 2),
                       minimumSize: const Size(250, 70),
                     ),

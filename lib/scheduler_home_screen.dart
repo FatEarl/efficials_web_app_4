@@ -6,7 +6,7 @@ class SchedulerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
-    final double appBarHeight = kToolbarHeight;
+    const double appBarHeight = kToolbarHeight;
     final double totalBannerHeight = statusBarHeight + appBarHeight;
 
     return Scaffold(
@@ -60,8 +60,8 @@ class SchedulerHomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         CircleAvatar(
                           radius: 24,
                           backgroundColor: Colors.white,
@@ -151,11 +151,11 @@ class SchedulerHomeScreen extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+          child: const Padding(
+            padding: EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   'Press the "+" icon to schedule your first game.',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
