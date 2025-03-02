@@ -5,7 +5,6 @@ class SchedulerHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate the status bar height and app bar height to align the Drawer header
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double appBarHeight = kToolbarHeight;
     final double totalBannerHeight = statusBarHeight + appBarHeight;
@@ -134,13 +133,7 @@ class SchedulerHomeScreen extends StatelessWidget {
               leading: const Icon(Icons.list, size: 30),
               title: const Text('Lists of Officials',
                   style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Lists of Officials coming soon')),
-                );
-              },
+              onTap: () => Navigator.pushNamed(context, '/lists_of_officials'),
             ),
             ListTile(
               leading: const Icon(Icons.settings, size: 30),

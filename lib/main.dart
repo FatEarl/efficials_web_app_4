@@ -9,6 +9,10 @@ import 'location_screen.dart';
 import 'add_new_location_screen.dart';
 import 'date_time_screen.dart';
 import 'additional_game_info_screen.dart';
+import 'lists_of_officials_screen.dart';
+import 'create_new_list_screen.dart';
+import 'populate_roster_screen.dart';
+import 'filter_settings_screen.dart';
 
 void main() => runApp(const EfficialsApp());
 
@@ -56,10 +60,9 @@ class EfficialsApp extends StatelessWidget {
           side: const BorderSide(color: Colors.black, width: 2),
           checkColor: const WidgetStatePropertyAll(Colors.white),
           fillColor: WidgetStateProperty.resolveWith(
-            (states) =>
-                states.contains(WidgetState.selected)
-                    ? const Color(0xFF2196F3)
-                    : Colors.white,
+            (states) => states.contains(WidgetState.selected)
+                ? const Color(0xFF2196F3)
+                : Colors.white,
           ),
         ),
         textSelectionTheme: const TextSelectionThemeData(
@@ -80,24 +83,27 @@ class EfficialsApp extends StatelessWidget {
           ),
         ),
       ),
-      builder:
-          (context, child) => GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: child!,
-          ),
+      builder: (context, child) => GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: child!,
+      ),
       initialRoute: '/home',
       routes: {
         '/home': (context) => const SchedulerHomeScreen(),
         '/select_sport': (context) => const SelectSportScreen(),
         '/create_schedule': (context) => const CreateScheduleScreen(),
-        '/select_officials_list':
-            (context) => const SelectOfficialsListScreen(),
+        '/select_officials_list': (context) =>
+            const SelectOfficialsListScreen(),
         '/add_officials': (context) => const AddOfficialsScreen(),
         '/add_officials_to_list': (context) => const AddOfficialsToListScreen(),
         '/location': (context) => const LocationScreen(),
         '/add_new_location': (context) => const AddNewLocationScreen(),
         '/date_time': (context) => const DateTimeScreen(),
         '/additional_game_info': (context) => const AdditionalGameInfoScreen(),
+        '/lists_of_officials': (context) => const ListsOfOfficialsScreen(),
+        '/create_new_list': (context) => const CreateNewListScreen(),
+        '/populate_roster': (context) => const PopulateRosterScreen(),
+        '/filter_settings': (context) => const FilterSettingsScreen(),
       },
     );
   }

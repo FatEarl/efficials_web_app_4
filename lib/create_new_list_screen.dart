@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 
-class ListsOfOfficialsScreen extends StatefulWidget {
-  const ListsOfOfficialsScreen({super.key});
+class CreateNewListScreen extends StatefulWidget {
+  const CreateNewListScreen({super.key});
 
   @override
-  State<ListsOfOfficialsScreen> createState() => _ListsOfOfficialsScreenState();
+  State<CreateNewListScreen> createState() => _CreateNewListScreenState();
 }
 
-class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
-  String? selectedList;
-  final List<String> lists = ['No saved lists', '+ Create new list'];
+class _CreateNewListScreenState extends State<CreateNewListScreen> {
+  String? selectedSport;
+  final List<String> sports = [
+    'Football',
+    'Basketball',
+    'Baseball',
+    'Soccer',
+    'Volleyball',
+    'Other'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,7 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Lists of Officials',
+          'Create New List',
           style: TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
@@ -60,14 +67,14 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    'Select a list of officials to edit or create a new list.',
+                    'Choose a sport for your new list.',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 30),
                   DropdownButtonFormField<String>(
                     decoration: const InputDecoration(
-                      labelText: 'Official Lists',
+                      labelText: 'Sport',
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(
                         borderSide:
@@ -82,59 +89,32 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             BorderSide(color: Color(0xFF2196F3), width: 2),
                       ),
                     ),
-                    value: selectedList,
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedList = newValue;
-                        if (newValue == '+ Create new list') {
-                          Navigator.pushNamed(context, '/create_new_list')
-                              .then((result) {
-                            if (result != null) {
-                              setState(() {
-                                if (lists.contains('No saved lists')) {
-                                  lists.remove('No saved lists');
-                                }
-                                lists.add(result as String);
-                                selectedList = result;
-                              });
-                            }
-                          });
-                        }
-                      });
-                    },
-                    items: lists.map((value) {
-                      return DropdownMenuItem(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: value == 'No saved lists'
-                              ? const TextStyle(color: Colors.red)
-                              : const TextStyle(color: Colors.black),
-                        ),
-                      );
-                    }).toList(),
+                    value: selectedSport,
+                    onChanged: (newValue) =>
+                        setState(() => selectedSport = newValue),
+                    items: sports
+                        .map((value) =>
+                            DropdownMenuItem(value: value, child: Text(value)))
+                        .toList(),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      if (selectedList != null &&
-                          selectedList != '+ Create new list' &&
-                          selectedList != 'No saved lists') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text('Editing $selectedList coming soon')),
+                      if (selectedSport != null) {
+                        Navigator.pushNamed(
+                          context,
+                          '/populate_roster',
+                          arguments: selectedSport,
                         );
-                      } else if (selectedList == null) {
+                      } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text(
-                                  'Please select or create a valid list!')),
+                              content: Text('Please select a sport!')),
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
+                      backgroundColor: Color(0xFF2196F3),
                       side: const BorderSide(color: Colors.black, width: 2),
                       minimumSize: const Size(250, 70),
                     ),
