@@ -14,6 +14,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   List<Map<String, dynamic>> filteredOfficials = [];
   String filterSummary = '';
   bool filtersApplied = false;
+  bool isLoading = true;
   Map<int, bool> selectedOfficials = {};
   Map<String, dynamic>? filterSettings;
 
@@ -24,6 +25,9 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   }
 
   Future<void> _loadOfficials() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       final dbOfficials = await DatabaseHelper.instance.getOfficials();
       setState(() {
@@ -39,6 +43,10 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading officials: $e')),
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -83,7 +91,9 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
             ihsaCertified ? official['ihsaCertified'] as bool : true;
         final matchesExperience =
             (official['yearsExperience'] as int) >= minYears;
-        final distance = official['zipCode'] == schedulerZipCode ? 0 : 2500;
+        final distance = official['zipCode'] == schedulerZipCode
+            ? 0
+            : 10; // Reduced default distance
         official['distance'] = distance;
         final withinDistance = distance <= radius;
 
@@ -167,7 +177,13 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       ),
       body: Column(
         children: [
-          if (!filtersApplied) ...[
+          if (isLoading) ...[
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ] else if (!filtersApplied) ...[
             const Expanded(
               child: Center(
                 child: Text(
@@ -177,8 +193,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                 ),
               ),
             ),
-          ],
-          if (filtersApplied) ...[
+          ] else ...[
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: Padding(
