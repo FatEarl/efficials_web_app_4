@@ -32,6 +32,10 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       final dbOfficials = await DatabaseHelper.instance.getOfficials();
       setState(() {
         officials = dbOfficials;
+        print('Loaded ${officials.length} officials');
+        if (officials.isNotEmpty) {
+          print('First official: ${officials[0]}');
+        }
         filteredOfficials = [];
         filterSummary = 'No filters applied';
         selectedOfficials.clear();
@@ -40,6 +44,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
         }
       });
     } catch (e) {
+      print('Error in _loadOfficials: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading officials: $e')),
       );
@@ -67,6 +72,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   }
 
   void _applyFiltersWithSettings(Map<String, dynamic> settings) {
+    print('Applying filters with settings: $settings');
     setState(() {
       filterSettings = settings;
       filtersApplied = true;
@@ -80,7 +86,9 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       final radius = settings['radius'] as int;
 
       filteredOfficials = officials.where((official) {
-        final matchesSport = (official['sports'] as List).contains(sport);
+        final matchesSport = (official['sports'] as List)
+            .map((s) => s.toLowerCase())
+            .contains(sport.toLowerCase());
         final matchesLevel = levels.isEmpty ||
             (official['levels'] as List).any((level) => levels.contains(level));
         final matchesIhsaRegistered =
@@ -90,12 +98,16 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
         final matchesIhsaCertified =
             ihsaCertified ? official['ihsaCertified'] as bool : true;
         final matchesExperience =
-            (official['yearsExperience'] as int) >= minYears;
-        final distance = official['zipCode'] == schedulerZipCode
-            ? 0
-            : 10; // Reduced default distance
+            (official['yearsExperience'] as int? ?? 0) >= minYears;
+        final distance = official['zipCode'] == schedulerZipCode ? 0 : 10;
         official['distance'] = distance;
         final withinDistance = distance <= radius;
+
+        print(
+            'Official: ${official['name']}, Sport: $sport, Matches Sport: $matchesSport, '
+            'Levels: $levels, Matches Level: $matchesLevel, '
+            'Distance: $distance, Within Distance: $withinDistance, '
+            'Matches Experience: $matchesExperience');
 
         return matchesSport &&
             matchesLevel &&
@@ -105,6 +117,11 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
             matchesExperience &&
             withinDistance;
       }).toList();
+
+      print('Filtered officials: ${filteredOfficials.length}');
+      if (filteredOfficials.isNotEmpty) {
+        print('First filtered official: ${filteredOfficials[0]}');
+      }
 
       if (searchQuery.isNotEmpty) {
         filteredOfficials = filteredOfficials

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -9,32 +8,41 @@ class DatabaseHelper {
   DatabaseHelper._init();
 
   Future<List<Map<String, dynamic>>> getOfficials() async {
+    print('Starting HTTP request to $baseUrl/officials');
     try {
-      print('Starting request to $baseUrl/officials');
-      // Use compute to run the HTTP request off the main thread
-      final response = await compute(_fetchOfficials, baseUrl);
-      print('Request completed with status: ${response.statusCode}');
+      final response = await http
+          .get(Uri.parse('$baseUrl/officials'))
+          .timeout(Duration(seconds: 5), onTimeout: () {
+        print('HTTP request timed out after 5 seconds');
+        throw Exception('Request timed out after 5 seconds');
+      });
 
+      print('HTTP request completed with status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(json.decode(response.body))
-            .map((o) => {
-                  'id': o['id'],
-                  'name': '${o['first_name']} ${o['last_name']}',
-                  'sports': o['sports']?.split(',') ?? [],
-                  'levels': o['levels']?.split(',') ?? [],
-                  'zipCode': o['zip_code'],
-                  'ihsaRegistered': o['ihsa_credential'] == 'IHSA Registered' ||
-                      o['ihsa_credential'] == 'IHSA Recognized' ||
-                      o['ihsa_credential'] == 'IHSA Certified',
-                  'ihsaRecognized': o['ihsa_credential'] == 'IHSA Recognized' ||
-                      o['ihsa_credential'] == 'IHSA Certified',
-                  'ihsaCertified': o['ihsa_credential'] == 'IHSA Certified',
-                  'yearsExperience': o['years_experience'],
-                  'distance': 0,
-                  'cityState': 'Unknown, ST',
-                })
-            .toList();
+        final data = json.decode(response.body);
+        print('Data received: ${data.length} officials');
+        if (data.isEmpty) {
+          print('Warning: No officials returned from backend');
+        }
+        return List<Map<String, dynamic>>.from(data).map((o) => {
+              'id': o['id'],
+              'name': '${o['first_name']} ${o['last_name']}',
+              'sports': o['sports']?.split(',') ?? [],
+              'levels': o['levels']?.split(',') ?? [],
+              'zipCode': o['zip_code'],
+              'ihsaRegistered': o['ihsa_credential'] == 'IHSA Registered' ||
+                  o['ihsa_credential'] == 'IHSA Recognized' ||
+                  o['ihsa_credential'] == 'IHSA Certified',
+              'ihsaRecognized': o['ihsa_credential'] == 'IHSA Recognized' ||
+                  o['ihsa_credential'] == 'IHSA Certified',
+              'ihsaCertified': o['ihsa_credential'] == 'IHSA Certified',
+              'yearsExperience': o['years_experience'] ?? 0, // Default to 0 if null
+              'distance': 0,
+              'cityState': 'Unknown, ST',
+            }).toList();
       } else {
+        print('HTTP request failed with status: ${response.statusCode}');
         throw Exception(
             'Failed to load officials: Status code ${response.statusCode}');
       }
@@ -43,13 +51,4 @@ class DatabaseHelper {
       rethrow;
     }
   }
-}
-
-// Isolate function to perform HTTP request
-Future<http.Response> _fetchOfficials(String baseUrl) async {
-  return await Future.any([
-    http.get(Uri.parse('$baseUrl/officials')),
-    Future.delayed(Duration(seconds: 10))
-        .then((_) => throw Exception('Request timed out after 10 seconds')),
-  ]);
 }
