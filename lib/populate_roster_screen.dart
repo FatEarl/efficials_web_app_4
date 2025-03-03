@@ -24,29 +24,22 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   }
 
   Future<void> _loadOfficials() async {
-    final dbOfficials = await DatabaseHelper.instance.getOfficials();
-    setState(() {
-      officials = dbOfficials
-          .map((o) => {
-                'name': o['name'],
-                'sports': o['sports'].split(','),
-                'levels': o['levels'].split(','),
-                'zipCode': o['zipCode'],
-                'distance': 0,
-                'ihsaRegistered': o['ihsaRegistered'] == 1,
-                'ihsaRecognized': o['ihsaRecognized'] == 1,
-                'ihsaCertified': o['ihsaCertified'] == 1,
-                'yearsExperience': o['yearsExperience'],
-                'cityState': 'Unknown, ST',
-              })
-          .toList();
-      filteredOfficials = [];
-      filterSummary = 'No filters applied';
-      selectedOfficials.clear();
-      if (filterSettings != null) {
-        _applyFiltersWithSettings(filterSettings!);
-      }
-    });
+    try {
+      final dbOfficials = await DatabaseHelper.instance.getOfficials();
+      setState(() {
+        officials = dbOfficials;
+        filteredOfficials = [];
+        filterSummary = 'No filters applied';
+        selectedOfficials.clear();
+        if (filterSettings != null) {
+          _applyFiltersWithSettings(filterSettings!);
+        }
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading officials: $e')),
+      );
+    }
   }
 
   void _applyFilters() {
