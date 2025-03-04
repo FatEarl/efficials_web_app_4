@@ -22,7 +22,6 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   @override
   void initState() {
     super.initState();
-    // Do not call _loadOfficials here; wait for filters to be applied
   }
 
   Future<void> _loadOfficials() async {
@@ -299,8 +298,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                                     print(
                                         'Rendering official ID: $officialId, Selected: ${selectedOfficials[officialId] ?? false}');
                                     return ListTile(
-                                      key: ValueKey(
-                                          officialId), // Add unique key
+                                      key: ValueKey(officialId),
                                       leading: IconButton(
                                         icon: Icon(
                                           selectedOfficials[officialId] ?? false
@@ -392,7 +390,24 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
-                      // Handle continue action
+                      if (selectedCount > 0) {
+                        final selected = officials
+                            .where((o) => selectedOfficials[o['id']] ?? false)
+                            .toList();
+                        Navigator.pushNamed(
+                          context,
+                          '/review_list',
+                          arguments: {
+                            'sport': filterSettings!['listName'] as String,
+                            'officials': selected,
+                          },
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Select at least one official!')),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
