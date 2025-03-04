@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // Import main.dart to access scaffoldMessengerKey
+import 'database.dart';
 
 class ReviewListScreen extends StatefulWidget {
   const ReviewListScreen({super.key});
@@ -15,6 +15,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   Map<int, bool> selectedOfficials = {};
   bool isInitialized = false;
   String? sport;
+  String? listName;
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       final arguments =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       sport = arguments['sport'] as String;
+      listName = arguments['listName'] as String;
       selectedOfficialsList =
           arguments['officials'] as List<Map<String, dynamic>>;
       filteredOfficials = List.from(selectedOfficialsList);
@@ -53,64 +55,43 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     });
   }
 
-  Future<String?> _showNameListDialog(BuildContext context) async {
-    final TextEditingController nameController = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Name your list of $sport officials.',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(
-              hintText: 'Ex. Varsity Officials',
-              hintStyle: TextStyle(color: Colors.grey),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
-              ),
-            ),
-            style: const TextStyle(fontSize: 18),
-          ),
-          actions: [
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (nameController.text.isNotEmpty) {
-                    Navigator.of(dialogContext).pop(nameController.text);
-                  } else {
-                    ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(content: Text('Please enter a list name')),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2196F3),
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.black, width: 2),
-                  minimumSize: const Size(150, 50),
-                  textStyle: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                child: const Text('Done'),
-              ),
-            ),
-          ],
-        );
-      },
-    ).then((value) {
-      nameController.dispose();
-      return value;
-    });
+  Future<void> _saveList() async {
+    final selectedOfficialsData = selectedOfficialsList
+        .where((official) => selectedOfficials[official['id'] as int] ?? false)
+        .toList();
+
+    final toList = {
+      'listName': listName!,
+      'officials': selectedOfficialsData,
+    };
+
+    try {
+      final result = await DatabaseHelper.instance.saveList(toList);
+      print('List created: $result');
+
+      // Show the SnackBar first
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your list was created!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate after the SnackBar duration
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+          );
+        }
+      });
+    } catch (e) {
+      print('Error saving list: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving list: $e')),
+      );
+    }
   }
 
   @override
@@ -197,23 +178,52 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: filteredOfficials.isNotEmpty &&
+                                      filteredOfficials.every((official) =>
+                                          selectedOfficials[official['id']] ??
+                                          false),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        for (final official
+                                            in filteredOfficials) {
+                                          selectedOfficials[official['id']] =
+                                              true;
+                                        }
+                                      } else {
+                                        for (final official
+                                            in filteredOfficials) {
+                                          selectedOfficials
+                                              .remove(official['id']);
+                                        }
+                                      }
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'Select all',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
                             Expanded(
                               child: ListView.builder(
                                 itemCount: filteredOfficials.length,
                                 itemBuilder: (context, index) {
                                   final official = filteredOfficials[index];
                                   final officialId = official['id'] as int;
-                                  final isSelected =
-                                      selectedOfficials[officialId] ?? false;
-
                                   return ListTile(
                                     key: ValueKey(officialId),
                                     leading: IconButton(
                                       icon: Icon(
-                                        isSelected
+                                        selectedOfficials[officialId] ?? false
                                             ? Icons.check_circle
                                             : Icons.add_circle,
-                                        color: isSelected
+                                        color: selectedOfficials[officialId] ??
+                                                false
                                             ? Colors.green
                                             : const Color(0xFF2196F3),
                                         size: 36,
@@ -221,26 +231,20 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                                       onPressed: () {
                                         setState(() {
                                           selectedOfficials[officialId] =
-                                              !isSelected;
-                                          filterOfficials(searchQuery);
+                                              !(selectedOfficials[officialId] ??
+                                                  false);
+                                          if (selectedOfficials[officialId] ==
+                                              false) {
+                                            selectedOfficials
+                                                .remove(officialId);
+                                          }
                                         });
                                       },
                                     ),
                                     title: Text(
-                                      '${official['name']} (${official['cityState']})',
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.black
-                                            : Colors.grey.shade400,
-                                      ),
-                                    ),
+                                        '${official['name']} (${official['cityState'] ?? 'Unknown'})'),
                                     subtitle: Text(
-                                      'Distance: ${official['distance'].toStringAsFixed(1)} mi, Experience: ${official['yearsExperience']} yrs',
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.black
-                                            : Colors.grey.shade400,
-                                      ),
+                                      'Distance: ${official['distance'].toStringAsFixed(1)} mi, Experience: ${official['yearsExperience'] ?? 0} yrs',
                                     ),
                                   );
                                 },
@@ -252,78 +256,37 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               ),
             ),
           ),
-          filteredOfficials.isNotEmpty
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '($selectedCount) Selected',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (selectedCount == 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Please select at least one official')),
-                            );
-                            return;
-                          }
-                          final listName = await _showNameListDialog(context);
-                          if (listName != null) {
-                            final selectedOfficialsData = selectedOfficialsList
-                                .where((official) =>
-                                    selectedOfficials[official['id'] as int] ??
-                                    false)
-                                .toList();
-                            final result = {
-                              'listName': listName,
-                              'officials': selectedOfficialsData,
-                            };
-                            print('List created: $result');
-                            // Schedule navigation and snackbar after dialog dismissal
-                            Future.microtask(() {
-                              // Navigate back to SchedulerHomeScreen
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/home',
-                                (route) => false,
-                              );
-                              // Show snackbar after navigation
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                scaffoldMessengerKey.currentState?.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Your list was created!'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              });
-                            });
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2196F3),
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.black, width: 2),
-                          minimumSize: const Size(250, 50),
-                          textStyle: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        child: const Text('Save List'),
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink(),
         ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '($selectedCount) Selected',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: selectedCount > 0 ? _saveList : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2196F3),
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.black, width: 2),
+                minimumSize: const Size(250, 50),
+                textStyle:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              child: const Text('Save List'),
+            ),
+          ],
+        ),
       ),
     );
   }

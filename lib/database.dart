@@ -1,54 +1,60 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
-  static const String baseUrl = 'http://10.0.2.2:3000'; // Emulator host mapping
+  static const String baseUrl = 'http://10.0.2.2:3000';
 
   DatabaseHelper._init();
 
   Future<List<Map<String, dynamic>>> getOfficials() async {
     print('Starting HTTP request to $baseUrl/officials');
-    try {
-      final response = await http
-          .get(Uri.parse('$baseUrl/officials'))
-          .timeout(Duration(seconds: 5), onTimeout: () {
-        print('HTTP request timed out after 5 seconds');
-        throw Exception('Request timed out after 5 seconds');
-      });
+    final response = await http.get(Uri.parse('$baseUrl/officials'));
+    print('HTTP request completed with status: ${response.statusCode}');
 
-      print('HTTP request completed with status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print('Data received: ${data.length} officials');
-        if (data.isEmpty) {
-          print('Warning: No officials returned from backend');
-        }
-        return List<Map<String, dynamic>>.from(data).map((o) => {
-              'id': o['id'],
-              'name': '${o['first_name']} ${o['last_name']}',
-              'sports': o['sports']?.split(',') ?? [],
-              'levels': o['levels']?.split(',') ?? [],
-              'zipCode': o['zip_code'],
-              'ihsaRegistered': o['ihsa_credential'] == 'IHSA Registered' ||
-                  o['ihsa_credential'] == 'IHSA Recognized' ||
-                  o['ihsa_credential'] == 'IHSA Certified',
-              'ihsaRecognized': o['ihsa_credential'] == 'IHSA Recognized' ||
-                  o['ihsa_credential'] == 'IHSA Certified',
-              'ihsaCertified': o['ihsa_credential'] == 'IHSA Certified',
-              'yearsExperience': o['years_experience'] ?? 0, // Default to 0 if null
-              'distance': 0,
-              'cityState': 'Unknown, ST',
-            }).toList();
-      } else {
-        print('HTTP request failed with status: ${response.statusCode}');
-        throw Exception(
-            'Failed to load officials: Status code ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching officials: $e');
-      rethrow;
+    if (response.statusCode == 200) {
+      final List<dynamic> officialsJson = jsonDecode(response.body);
+      print('Data received: ${officialsJson.length} officials');
+
+      return officialsJson.map((json) {
+        final sports = json['sports'] is String ? json['sports'].split(',') : [];
+        final levels = json['levels'] is String ? json['levels'].split(',') : [];
+        return {
+          'id': json['id'],
+          'name': '${json['first_name']} ${json['last_name']}',
+          'sports': sports,
+          'levels': levels,
+          'zipCode': json['zip_code'],
+          'ihsaRegistered': json['ihsa_credential'] == 'IHSA Registered' ||
+              json['ihsa_credential'] == 'IHSA Recognized' ||
+              json['ihsa_credential'] == 'IHSA Certified',
+          'ihsaRecognized': json['ihsa_credential'] == 'IHSA Recognized' ||
+              json['ihsa_credential'] == 'IHSA Certified',
+          'ihsaCertified': json['ihsa_credential'] == 'IHSA Certified',
+          'yearsExperience': json['years_experience'],
+          'cityState': 'Unknown, ST', // Placeholder since not provided
+        };
+      }).toList();
+    } else {
+      throw Exception('Failed to load officials: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> saveList(Map<String, dynamic> listData) async {
+    print('Saving list to $baseUrl/lists: $listData');
+    final response = await http.post(
+      Uri.parse('$baseUrl/lists'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(listData),
+    );
+    print('HTTP request completed with status: ${response.statusCode}');
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      print('List saved successfully: $responseData');
+      return responseData;
+    } else {
+      throw Exception('Failed to save list: ${response.statusCode}');
     }
   }
 }

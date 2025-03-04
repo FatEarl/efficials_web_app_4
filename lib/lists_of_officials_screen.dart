@@ -87,8 +87,11 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                       setState(() {
                         selectedList = newValue;
                         if (newValue == '+ Create new list') {
-                          Navigator.pushNamed(context, '/create_new_list')
-                              .then((result) {
+                          Navigator.pushNamed(
+                            context,
+                            '/create_new_list',
+                            arguments: lists, // Pass the current lists
+                          ).then((result) {
                             if (result != null) {
                               setState(() {
                                 if (lists.contains('No saved lists')) {

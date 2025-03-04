@@ -20,6 +20,9 @@ class _CreateNewListScreenState extends State<CreateNewListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final existingLists =
+        ModalRoute.of(context)!.settings.arguments as List<String>;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF2196F3),
@@ -103,8 +106,11 @@ class _CreateNewListScreenState extends State<CreateNewListScreen> {
                       if (selectedSport != null) {
                         Navigator.pushNamed(
                           context,
-                          '/populate_roster',
-                          arguments: selectedSport,
+                          '/name_list',
+                          arguments: {
+                            'sport': selectedSport,
+                            'existingLists': existingLists,
+                          },
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
