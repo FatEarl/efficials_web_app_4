@@ -1,6 +1,6 @@
-import 'dart:convert'; // Added for jsonDecode
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Added for http
+import 'package:http/http.dart' as http;
 import 'database.dart';
 
 class ListsOfOfficialsScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class ListsOfOfficialsScreen extends StatefulWidget {
 
 class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
   String? selectedList;
-  List<String> lists = ['No saved lists', '+ Create new list'];
+  List<Map<String, dynamic>> lists = [];
   bool isLoading = true;
 
   @override
@@ -23,15 +23,15 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
 
   Future<void> _fetchLists() async {
     try {
-      final response =
-          await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists'));
+      final response = await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists'));
       if (response.statusCode == 200) {
         final List<dynamic> fetchedLists = jsonDecode(response.body);
         setState(() {
-          if (fetchedLists.isNotEmpty) {
-            lists = fetchedLists.map((list) => list['name'] as String).toList();
-            lists.add('+ Create new list');
-          } // If empty, keep 'No saved lists' as default
+          lists = fetchedLists.map((list) => list as Map<String, dynamic>).toList();
+          if (lists.isEmpty) {
+            lists.add({'name': 'No saved lists', 'id': -1});
+          }
+          lists.add({'name': '+ Create new list', 'id': 0});
           isLoading = false;
         });
       } else {
@@ -41,10 +41,28 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
       print('Error fetching lists: $e');
       setState(() {
         isLoading = false;
+        lists = [{'name': 'No saved lists', 'id': -1}, {'name': '+ Create new list', 'id': 0}];
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading lists: $e')),
       );
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchListOfficials(int listId) async {
+    try {
+      final response = await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists/$listId/officials'));
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to load officials: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching officials: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading officials: $e')),
+      );
+      return [];
     }
   }
 
@@ -59,16 +77,14 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
         ),
         title: const Text(
           'Lists of Officials',
-          style: TextStyle(
-              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           Stack(
             alignment: Alignment.topRight,
             children: [
               IconButton(
-                icon: const Icon(Icons.monetization_on,
-                    size: 36, color: Colors.white),
+                icon: const Icon(Icons.monetization_on, size: 36, color: Colors.white),
                 onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Tokens: 1')),
                 ),
@@ -79,8 +95,7 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                 child: CircleAvatar(
                   radius: 8,
                   backgroundColor: Colors.red,
-                  child: Text('1',
-                      style: TextStyle(color: Colors.white, fontSize: 10)),
+                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 10)),
                 ),
               ),
             ],
@@ -109,16 +124,13 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             labelText: 'Official Lists',
                             labelStyle: TextStyle(color: Colors.black),
                             border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
                             ),
                           ),
                           value: selectedList,
@@ -129,14 +141,14 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                                 Navigator.pushNamed(
                                   context,
                                   '/create_new_list',
-                                  arguments: lists,
+                                  arguments: lists.map((l) => l['name'] as String).toList(),
                                 ).then((result) {
                                   if (result != null) {
                                     setState(() {
-                                      if (lists.contains('No saved lists')) {
-                                        lists.remove('No saved lists');
+                                      if (lists.any((l) => l['name'] == 'No saved lists')) {
+                                        lists.removeWhere((l) => l['name'] == 'No saved lists');
                                       }
-                                      lists.add(result as String);
+                                      lists.add({'name': result as String, 'id': lists.length + 1});
                                       selectedList = result;
                                     });
                                   }
@@ -144,12 +156,12 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                               }
                             });
                           },
-                          items: lists.map((value) {
+                          items: lists.map((list) {
                             return DropdownMenuItem(
-                              value: value,
+                              value: list['name'] as String,
                               child: Text(
-                                value,
-                                style: value == 'No saved lists'
+                                list['name'] as String,
+                                style: list['name'] == 'No saved lists'
                                     ? const TextStyle(color: Colors.red)
                                     : const TextStyle(color: Colors.black),
                               ),
@@ -158,20 +170,24 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                         ),
                   const SizedBox(height: 60),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (selectedList != null &&
                           selectedList != '+ Create new list' &&
                           selectedList != 'No saved lists') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text('Editing $selectedList coming soon')),
+                        final selected = lists.firstWhere((l) => l['name'] == selectedList);
+                        final officials = await _fetchListOfficials(selected['id'] as int);
+                        Navigator.pushNamed(
+                          context,
+                          '/edit_list',
+                          arguments: {
+                            'listName': selectedList,
+                            'listId': selected['id'],
+                            'officials': officials,
+                          },
                         );
                       } else if (selectedList == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please select or create a valid list!')),
+                          const SnackBar(content: Text('Please select or create a valid list!')),
                         );
                       }
                     },
@@ -182,8 +198,7 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                     ),
                     child: const Text(
                       'Continue',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

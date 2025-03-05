@@ -18,10 +18,32 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   bool isLoading = false;
   Map<int, bool> selectedOfficials = {};
   Map<String, dynamic>? filterSettings;
+  List<Map<String, dynamic>> initialOfficials = [];
+  bool isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    selectedOfficials = {};
+    initialOfficials = [];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isInitialized) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        initialOfficials =
+            args['selectedOfficials'] as List<Map<String, dynamic>>? ?? [];
+        selectedOfficials = {};
+        for (var official in initialOfficials) {
+          selectedOfficials[official['id'] as int] = true;
+        }
+      }
+      isInitialized = true;
+    }
   }
 
   Future<void> _loadOfficials() async {
@@ -29,104 +51,137 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       isLoading = true;
     });
     try {
+      print('Fetching officials from ${DatabaseHelper.baseUrl}/officials');
       final dbOfficials = await DatabaseHelper.instance.getOfficials();
+      print('Received ${dbOfficials.length} officials');
       setState(() {
         officials = dbOfficials;
-        print('Loaded ${officials.length} officials');
-        if (officials.isNotEmpty) {
-          print('Sample official: ${officials[0]}');
-        } else {
-          print('No officials returned from database!');
-        }
         filteredOfficials = [];
         filteredOfficialsWithoutSearch = [];
         filterSummary = 'No filters applied';
         if (filterSettings != null) {
           _applyFiltersWithSettings(filterSettings!);
         }
+        isLoading = false;
       });
     } catch (e) {
-      print('Error in _loadOfficials: $e');
+      print('Error loading officials: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading officials: $e')),
       );
-    } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  void _applyFilters(Map<String, dynamic> settings) {
-    _applyFiltersWithSettings(settings);
-  }
-
   void _applyFiltersWithSettings(Map<String, dynamic> settings) {
     print('Applying filters with settings: $settings');
-    _loadOfficials().then((_) {
-      setState(() {
-        filterSettings = settings;
-        filtersApplied = true;
-        // Use 'sport' if present, fallback to 'listName' for compatibility
-        final sport =
-            settings['sport'] as String? ?? settings['listName'] as String;
-        final ihsaRegistered = settings['ihsaRegistered'] as bool? ?? false;
-        final ihsaRecognized = settings['ihsaRecognized'] as bool? ?? false;
-        final ihsaCertified = settings['ihsaCertified'] as bool? ?? false;
-        final minYears = settings['minYears'] as int? ?? 0;
-        final levels = settings['levels'] as List<String>;
-        final schedulerZip = settings['zipCode'] as String;
-        final radius = settings['radius'] as int;
+    setState(() {
+      filterSettings = settings;
+      filtersApplied = true;
+      final sport = settings['sport'] as String? ?? 'Football';
+      final ihsaRegistered = settings['ihsaRegistered'] as bool? ?? false;
+      final ihsaRecognized = settings['ihsaRecognized'] as bool? ?? false;
+      final ihsaCertified = settings['ihsaCertified'] as bool? ?? false;
+      final minYears = settings['minYears'] as int? ?? 0;
+      final levels = settings['levels'] as List<String>? ?? [];
+      final schedulerZip = settings['zipCode'] as String? ?? '00000';
+      final radius = settings['radius'] as int? ?? 50;
 
-        filteredOfficials = officials.where((official) {
-          final sports = official['sports'] as List?;
-          final matchesSport = sports != null
-              ? sports
-                  .map((s) => s.toString().toLowerCase())
-                  .contains(sport.toLowerCase())
-              : false;
+      print('Filtering for levels: $levels');
 
-          final officialLevels = official['levels'] as List?;
+      filteredOfficials = officials.where((official) {
+        try {
+          List<String> sports;
+          if (official['sports'] is String) {
+            sports = (official['sports'] as String)
+                .split(',')
+                .map((s) => s.trim())
+                .toList();
+          } else if (official['sports'] is List) {
+            sports = (official['sports'] as List)
+                .cast<String>()
+                .map((s) => s.trim())
+                .toList();
+          } else {
+            sports = [];
+          }
+          final matchesSport =
+              sports.map((s) => s.toLowerCase()).contains(sport.toLowerCase());
+
+          List<String> officialLevels;
+          if (official['levels'] is String) {
+            officialLevels = (official['levels'] as String)
+                .split(',')
+                .map((l) => l.trim())
+                .toList();
+          } else if (official['levels'] is List) {
+            officialLevels = (official['levels'] as List)
+                .cast<String>()
+                .map((l) => l.trim())
+                .toList();
+          } else {
+            officialLevels = [];
+          }
+          print('Official ${official['name']} has levels: $officialLevels');
           final matchesLevel = levels.isEmpty ||
-              (officialLevels != null &&
-                  officialLevels
-                      .any((level) => levels.contains(level.toString())));
+              officialLevels.any((level) => levels.contains(level));
 
-          final matchesIhsaRegistered = ihsaRegistered
-              ? official['ihsaRegistered'] as bool? ?? false
-              : true;
-          final matchesIhsaRecognized = ihsaRecognized
-              ? official['ihsaRecognized'] as bool? ?? false
-              : true;
-          final matchesIhsaCertified = ihsaCertified
-              ? official['ihsaCertified'] as bool? ?? false
-              : true;
+          final credential = official['ihsa_credential'] as String? ?? '';
+          final matchesIhsaRegistered =
+              !ihsaRegistered || credential.contains('Registered');
+          final matchesIhsaRecognized =
+              !ihsaRecognized || credential.contains('Recognized');
+          final matchesIhsaCertified =
+              !ihsaCertified || credential.contains('Certified');
+
           final matchesExperience =
               (official['yearsExperience'] as int? ?? 0) >= minYears;
 
           final officialZip = official['zipCode']?.toString() ?? '00000';
-          final distance = officialZip == schedulerZip ? 0 : 15;
-          official['distance'] = distance;
+          final distance = officialZip == schedulerZip
+              ? 0
+              : (official['distance'] as num? ?? 15);
           final withinDistance = distance <= radius;
 
-          print('Official: ${official['name']}, '
-              'Sport: $sport, Matches Sport: $matchesSport, '
-              'Levels: $levels, Matches Level: $matchesLevel, '
-              'Distance: $distance, Within Distance: $withinDistance, '
-              'Experience: ${official['yearsExperience']}, Matches Exp: $matchesExperience');
-
-          return matchesSport &&
+          final matches = matchesSport &&
               matchesLevel &&
               matchesIhsaRegistered &&
               matchesIhsaRecognized &&
               matchesIhsaCertified &&
               matchesExperience &&
               withinDistance;
-        }).toList();
 
-        filteredOfficialsWithoutSearch = List.from(filteredOfficials);
+          print(
+              'Official ${official['name']}: matchesSport=$matchesSport, matchesLevel=$matchesLevel, matchesDistance=$withinDistance, overall=$matches');
+          return matches;
+        } catch (e) {
+          print('Error filtering official ${official['name']}: $e');
+          return false;
+        }
+      }).toList();
 
-        if (searchQuery.isNotEmpty) {
+      print('Filtered to ${filteredOfficials.length} officials');
+      filteredOfficialsWithoutSearch = List.from(filteredOfficials);
+      if (searchQuery.isNotEmpty) {
+        filteredOfficials = filteredOfficials
+            .where((official) => official['name']
+                .toString()
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase()))
+            .toList();
+      }
+      isLoading = false;
+    });
+  }
+
+  void filterOfficials(String query) {
+    setState(() {
+      searchQuery = query;
+      if (filtersApplied) {
+        filteredOfficials = List.from(filteredOfficialsWithoutSearch);
+        if (query.isNotEmpty) {
           filteredOfficials = filteredOfficials
               .where((official) => official['name']
                   .toString()
@@ -134,39 +189,6 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                   .contains(searchQuery.toLowerCase()))
               .toList();
         }
-
-        print('Filtered officials count: ${filteredOfficials.length}');
-        if (filteredOfficials.isNotEmpty) {
-          print('First filtered official: ${filteredOfficials[0]}');
-        }
-
-        filterSummary = 'Filters: Sport: $sport, '
-            'Levels: ${levels.join(', ')}, '
-            'IHSA: ${ihsaRegistered ? "Reg " : ""}${ihsaRecognized ? "Rec " : ""}${ihsaCertified ? "Cert" : ""}, '
-            'Exp: $minYears+, '
-            'Radius: $radius mi';
-      });
-    });
-  }
-
-  void filterOfficials(String query) {
-    setState(() {
-      print('Before filterOfficials - Selected officials: $selectedOfficials');
-      searchQuery = query;
-      if (filtersApplied) {
-        filteredOfficials = List.from(filteredOfficialsWithoutSearch);
-
-        if (query.isNotEmpty) {
-          filteredOfficials = filteredOfficials
-              .where((official) => official['name']
-                  .toString()
-                  .toLowerCase()
-                  .contains(query.toLowerCase()))
-              .toList();
-        }
-
-        print('Filtered officials after search: ${filteredOfficials.length}');
-        print('After filterOfficials - Selected officials: $selectedOfficials');
       }
     });
   }
@@ -174,9 +196,10 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
   @override
   Widget build(BuildContext context) {
     final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final sport = args['sport']!;
     final listName = args['listName']!;
+    final listId = args['listId'] as int?;
     final int selectedCount =
         selectedOfficials.values.where((selected) => selected).length;
 
@@ -220,11 +243,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
       body: Column(
         children: [
           if (isLoading) ...[
-            const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+            const Expanded(child: Center(child: CircularProgressIndicator())),
           ] else if (!filtersApplied) ...[
             const Expanded(
               child: Center(
@@ -306,10 +325,8 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                                       });
                                     },
                                   ),
-                                  const Text(
-                                    'Select all',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
+                                  const Text('Select all',
+                                      style: TextStyle(fontSize: 18)),
                                 ],
                               ),
                               Expanded(
@@ -318,8 +335,6 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                                   itemBuilder: (context, index) {
                                     final official = filteredOfficials[index];
                                     final officialId = official['id'] as int;
-                                    print(
-                                        'Rendering official ID: $officialId, Selected: ${selectedOfficials[officialId] ?? false}');
                                     return ListTile(
                                       key: ValueKey(officialId),
                                       leading: IconButton(
@@ -345,15 +360,13 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                                               selectedOfficials
                                                   .remove(officialId);
                                             }
-                                            print(
-                                                'After selection change - Selected officials: $selectedOfficials');
                                           });
                                         },
                                       ),
                                       title: Text(
                                           '${official['name']} (${official['cityState'] ?? 'Unknown'})'),
                                       subtitle: Text(
-                                        'Distance: ${official['distance'].toStringAsFixed(1)} mi, Experience: ${official['yearsExperience'] ?? 0} yrs',
+                                        'Distance: ${official['distance'] != null ? (official['distance'] as num).toStringAsFixed(1) : '0.0'} mi, Experience: ${official['yearsExperience'] ?? 0} yrs',
                                       ),
                                     );
                                   },
@@ -380,7 +393,8 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
               arguments: sport,
             ).then((result) {
               if (result != null) {
-                _applyFilters(result as Map<String, dynamic>);
+                _loadOfficials().then((_) =>
+                    _applyFiltersWithSettings(result as Map<String, dynamic>));
               }
             });
           },
@@ -417,15 +431,7 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                         final selected = officials
                             .where((o) => selectedOfficials[o['id']] ?? false)
                             .toList();
-                        Navigator.pushNamed(
-                          context,
-                          '/review_list',
-                          arguments: {
-                            'sport': sport,
-                            'listName': listName,
-                            'officials': selected,
-                          },
-                        );
+                        Navigator.pop(context, selected);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -435,7 +441,6 @@ class _PopulateRosterScreenState extends State<PopulateRosterScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
-                      foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.black, width: 2),
                       minimumSize: const Size(250, 50),
                       textStyle: const TextStyle(
