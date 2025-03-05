@@ -64,7 +64,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     final listData = {
       'name': listName!,
       'sport': sport!,
-      'official_ids': selectedOfficialsData.map((o) => o['official_id']).toList(),
+      'official_ids':
+          selectedOfficialsData.map((o) => o['official_id']).toList(),
     };
 
     try {

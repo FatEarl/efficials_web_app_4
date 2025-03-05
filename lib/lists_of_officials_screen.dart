@@ -1,4 +1,7 @@
+import 'dart:convert'; // Added for jsonDecode
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // Added for http
+import 'database.dart';
 
 class ListsOfOfficialsScreen extends StatefulWidget {
   const ListsOfOfficialsScreen({super.key});
@@ -9,7 +12,41 @@ class ListsOfOfficialsScreen extends StatefulWidget {
 
 class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
   String? selectedList;
-  final List<String> lists = ['No saved lists', '+ Create new list'];
+  List<String> lists = ['No saved lists', '+ Create new list'];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLists();
+  }
+
+  Future<void> _fetchLists() async {
+    try {
+      final response =
+          await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists'));
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedLists = jsonDecode(response.body);
+        setState(() {
+          if (fetchedLists.isNotEmpty) {
+            lists = fetchedLists.map((list) => list['name'] as String).toList();
+            lists.add('+ Create new list');
+          } // If empty, keep 'No saved lists' as default
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load lists: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching lists: $e');
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading lists: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,58 +102,60 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 60),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Official Lists',
-                      labelStyle: TextStyle(color: Colors.black),
-                      border: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Color(0xFF2196F3), width: 2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Color(0xFF2196F3), width: 2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Color(0xFF2196F3), width: 2),
-                      ),
-                    ),
-                    value: selectedList,
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedList = newValue;
-                        if (newValue == '+ Create new list') {
-                          Navigator.pushNamed(
-                            context,
-                            '/create_new_list',
-                            arguments: lists, // Pass the current lists
-                          ).then((result) {
-                            if (result != null) {
-                              setState(() {
-                                if (lists.contains('No saved lists')) {
-                                  lists.remove('No saved lists');
-                                }
-                                lists.add(result as String);
-                                selectedList = result;
-                              });
-                            }
-                          });
-                        }
-                      });
-                    },
-                    items: lists.map((value) {
-                      return DropdownMenuItem(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: value == 'No saved lists'
-                              ? const TextStyle(color: Colors.red)
-                              : const TextStyle(color: Colors.black),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Official Lists',
+                            labelStyle: TextStyle(color: Colors.black),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
+                            ),
+                          ),
+                          value: selectedList,
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedList = newValue;
+                              if (newValue == '+ Create new list') {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/create_new_list',
+                                  arguments: lists,
+                                ).then((result) {
+                                  if (result != null) {
+                                    setState(() {
+                                      if (lists.contains('No saved lists')) {
+                                        lists.remove('No saved lists');
+                                      }
+                                      lists.add(result as String);
+                                      selectedList = result;
+                                    });
+                                  }
+                                });
+                              }
+                            });
+                          },
+                          items: lists.map((value) {
+                            return DropdownMenuItem(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: value == 'No saved lists'
+                                    ? const TextStyle(color: Colors.red)
+                                    : const TextStyle(color: Colors.black),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
-                  ),
                   const SizedBox(height: 60),
                   ElevatedButton(
                     onPressed: () {
