@@ -58,18 +58,19 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   Future<void> _saveList() async {
     final selectedOfficialsData = selectedOfficialsList
         .where((official) => selectedOfficials[official['id'] as int] ?? false)
+        .map((official) => {'official_id': official['id']})
         .toList();
 
-    final toList = {
-      'listName': listName!,
-      'officials': selectedOfficialsData,
+    final listData = {
+      'name': listName!,
+      'sport': sport!,
+      'official_ids': selectedOfficialsData.map((o) => o['official_id']).toList(),
     };
 
     try {
-      final result = await DatabaseHelper.instance.saveList(toList);
+      final result = await DatabaseHelper.instance.saveList(listData);
       print('List created: $result');
 
-      // Show the SnackBar first
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Your list was created!'),
@@ -77,7 +78,6 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         ),
       );
 
-      // Navigate after the SnackBar duration
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(
