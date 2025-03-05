@@ -23,11 +23,13 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
 
   Future<void> _fetchLists() async {
     try {
-      final response = await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists'));
+      final response =
+          await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists'));
       if (response.statusCode == 200) {
         final List<dynamic> fetchedLists = jsonDecode(response.body);
         setState(() {
-          lists = fetchedLists.map((list) => list as Map<String, dynamic>).toList();
+          lists =
+              fetchedLists.map((list) => list as Map<String, dynamic>).toList();
           if (lists.isEmpty) {
             lists.add({'name': 'No saved lists', 'id': -1});
           }
@@ -41,7 +43,10 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
       print('Error fetching lists: $e');
       setState(() {
         isLoading = false;
-        lists = [{'name': 'No saved lists', 'id': -1}, {'name': '+ Create new list', 'id': 0}];
+        lists = [
+          {'name': 'No saved lists', 'id': -1},
+          {'name': '+ Create new list', 'id': 0}
+        ];
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading lists: $e')),
@@ -51,7 +56,8 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
 
   Future<List<Map<String, dynamic>>> _fetchListOfficials(int listId) async {
     try {
-      final response = await http.get(Uri.parse('${DatabaseHelper.baseUrl}/lists/$listId/officials'));
+      final response = await http
+          .get(Uri.parse('${DatabaseHelper.baseUrl}/lists/$listId/officials'));
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(jsonDecode(response.body));
       } else {
@@ -77,14 +83,16 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
         ),
         title: const Text(
           'Lists of Officials',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           Stack(
             alignment: Alignment.topRight,
             children: [
               IconButton(
-                icon: const Icon(Icons.monetization_on, size: 36, color: Colors.white),
+                icon: const Icon(Icons.monetization_on,
+                    size: 36, color: Colors.white),
                 onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Tokens: 1')),
                 ),
@@ -95,7 +103,8 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                 child: CircleAvatar(
                   radius: 8,
                   backgroundColor: Colors.red,
-                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 10)),
+                  child: Text('1',
+                      style: TextStyle(color: Colors.white, fontSize: 10)),
                 ),
               ),
             ],
@@ -124,13 +133,16 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             labelText: 'Official Lists',
                             labelStyle: TextStyle(color: Colors.black),
                             border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
+                              borderSide: BorderSide(
+                                  color: Color(0xFF2196F3), width: 2),
                             ),
                           ),
                           value: selectedList,
@@ -138,19 +150,30 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             setState(() {
                               selectedList = newValue;
                               if (newValue == '+ Create new list') {
+                                // Auto-navigate to Create New List
                                 Navigator.pushNamed(
                                   context,
                                   '/create_new_list',
-                                  arguments: lists.map((l) => l['name'] as String).toList(),
+                                  arguments: lists
+                                      .map((l) => l['name'] as String)
+                                      .toList(),
                                 ).then((result) {
                                   if (result != null) {
                                     setState(() {
-                                      if (lists.any((l) => l['name'] == 'No saved lists')) {
-                                        lists.removeWhere((l) => l['name'] == 'No saved lists');
+                                      if (lists.any((l) =>
+                                          l['name'] == 'No saved lists')) {
+                                        lists.removeWhere((l) =>
+                                            l['name'] == 'No saved lists');
                                       }
-                                      lists.add({'name': result as String, 'id': lists.length + 1});
+                                      lists.insert(0, {
+                                        'name': result as String,
+                                        'id': lists.length + 1
+                                      });
                                       selectedList = result;
                                     });
+                                  } else {
+                                    // Reset selection if navigation is cancelled
+                                    selectedList = null;
                                   }
                                 });
                               }
@@ -169,13 +192,16 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                           }).toList(),
                         ),
                   const SizedBox(height: 60),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (selectedList != null &&
-                          selectedList != '+ Create new list' &&
-                          selectedList != 'No saved lists') {
-                        final selected = lists.firstWhere((l) => l['name'] == selectedList);
-                        final officials = await _fetchListOfficials(selected['id'] as int);
+                  // Show the button only if an existing list is selected
+                  if (selectedList != null &&
+                      selectedList != '+ Create new list' &&
+                      selectedList != 'No saved lists')
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selected =
+                            lists.firstWhere((l) => l['name'] == selectedList);
+                        final officials =
+                            await _fetchListOfficials(selected['id'] as int);
                         Navigator.pushNamed(
                           context,
                           '/edit_list',
@@ -185,22 +211,18 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             'officials': officials,
                           },
                         );
-                      } else if (selectedList == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select or create a valid list!')),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
-                      side: const BorderSide(color: Colors.black, width: 2),
-                      minimumSize: const Size(250, 70),
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2196F3),
+                        side: const BorderSide(color: Colors.black, width: 2),
+                        minimumSize: const Size(250, 70),
+                      ),
+                      child: const Text(
+                        'Edit List',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
                 ],
               ),
             ),
