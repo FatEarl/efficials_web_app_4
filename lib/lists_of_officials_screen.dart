@@ -72,6 +72,64 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
     }
   }
 
+  Future<void> _deleteList(int listId) async {
+    try {
+      final response = await http
+          .delete(Uri.parse('${DatabaseHelper.baseUrl}/lists/$listId'));
+      if (response.statusCode == 204) {
+        // Successfully deleted
+        setState(() {
+          lists.removeWhere((list) => list['id'] == listId);
+          selectedList = null;
+          if (lists.isEmpty ||
+              (lists.length == 1 && lists[0]['name'] == '+ Create new list')) {
+            lists = [
+              {'name': 'No saved lists', 'id': -1},
+              {'name': '+ Create new list', 'id': 0}
+            ];
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('List deleted successfully')),
+        );
+      } else {
+        throw Exception('Failed to delete list: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error deleting list: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting list: $e')),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(String listName, int listId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete your $listName list?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _deleteList(listId); // Proceed with deletion
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +208,6 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             setState(() {
                               selectedList = newValue;
                               if (newValue == '+ Create new list') {
-                                // Auto-navigate to Create New List
                                 Navigator.pushNamed(
                                   context,
                                   '/create_new_list',
@@ -172,7 +229,6 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                                       selectedList = result;
                                     });
                                   } else {
-                                    // Reset selection if navigation is cancelled
                                     selectedList = null;
                                   }
                                 });
@@ -192,10 +248,10 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                           }).toList(),
                         ),
                   const SizedBox(height: 60),
-                  // Show the button only if an existing list is selected
+                  // Show buttons only if an existing list is selected
                   if (selectedList != null &&
                       selectedList != '+ Create new list' &&
-                      selectedList != 'No saved lists')
+                      selectedList != 'No saved lists') ...[
                     ElevatedButton(
                       onPressed: () async {
                         final selected =
@@ -223,6 +279,30 @@ class _ListsOfOfficialsScreenState extends State<ListsOfOfficialsScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
+                    const SizedBox(height: 8), // Space between buttons
+                    ElevatedButton(
+                      onPressed: () {
+                        final selected =
+                            lists.firstWhere((l) => l['name'] == selectedList);
+                        _showDeleteConfirmationDialog(
+                            selectedList!, selected['id'] as int);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.black, width: 2),
+                        minimumSize:
+                            const Size(125, 35), // Half the size of Edit List
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text(
+                        'Delete List',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
